@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <random>
 #include <cmath>
 
 // Neural network parameters
@@ -23,8 +24,12 @@ typedef struct {
 
 void initialize_weights(float* array, int size) {
     if (array == nullptr) return;
+
+    static std::default_random_engine engine(42);
+    std::uniform_real_distribution distribution(-0.5f, 0.5f);
+
     for (int i = 0; i < size; i++) {
-        array[i] = ((float) rand() / RAND_MAX) - 0.5f;  // Random values between -0.5 and 0.5
+        array[i] = distribution(engine);
     }
 }
 
@@ -126,6 +131,7 @@ int main() {
     int hidden_size = 1280;   // Hidden layer neurons
     int output_size = 10;    // Output classes
     int batch_size = 320;     // Batch size for evaluation
+    srand(42);
 
     NeuralNetwork* nn = initialize_network(input_size, hidden_size, output_size);
     Batch* batch = initialize_batch(batch_size, input_size, output_size);
