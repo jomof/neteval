@@ -22,6 +22,7 @@ typedef struct {
 } Batch;
 
 void initialize_weights(float* array, int size) {
+    if (array == nullptr) return;
     for (int i = 0; i < size; i++) {
         array[i] = ((float) rand() / RAND_MAX) - 0.5f;  // Random values between -0.5 and 0.5
     }
@@ -49,7 +50,7 @@ NeuralNetwork* initialize_network(int input_size, int hidden_size, int output_si
 }
 
 Batch* initialize_batch(int batch_size, int input_size, int output_size) {
-    auto* batch = (Batch*) malloc(sizeof(Batch));
+    auto* batch = static_cast<Batch *>(malloc(sizeof(Batch)));
     batch->batch_size = batch_size;
     batch->inputs = (float*) malloc(batch_size * input_size * sizeof(float));
     batch->outputs = (float*) malloc(batch_size * output_size * sizeof(float));
@@ -123,7 +124,7 @@ void forward(NeuralNetwork* nn, Batch* batch) {
 int main() {
     int input_size = 7840;    // Example: MNIST input size
     int hidden_size = 1280;   // Hidden layer neurons
-    int output_size = 100;    // Output classes
+    int output_size = 10;    // Output classes
     int batch_size = 320;     // Batch size for evaluation
 
     NeuralNetwork* nn = initialize_network(input_size, hidden_size, output_size);
