@@ -112,7 +112,7 @@ long matvec_mult(const float* input, const float* transposed_weights, const floa
         std::cout << "Number of threads: " << omp_get_num_threads() << std::endl;
     }
 
-    #pragma omp parallel for collapse(2) reduction(+:ops) schedule(static)
+    #pragma omp parallel for collapse(1) reduction(+:ops) schedule(static)
     for (int b = 0; b < BATCH_SIZE; b++) {
         for (int j = 0; j < T_OUTPUT_SIZE; j++) {
             float sum = bias[j];
@@ -168,13 +168,11 @@ long forward(NeuralNetwork* nn, Batch* batch) {
     auto* hidden_outputs = static_cast<float *>(XALLOC(BATCH_SIZE * HIDDEN_SIZE * sizeof(float)));
 
     // Input to Hidden Layer
-    ops += matvec_mult<INPUT_SIZE, HIDDEN_SIZE>(batch->inputs, nn->input_to_hidden_weights, nn->hidden_biases,
-                hidden_outputs);
+    ops += matvec_mult<INPUT_SIZE, HIDDEN_SIZE>(batch->inputs, nn->input_to_hidden_weights, nn->hidden_biases, hidden_outputs);
     ops += relu(hidden_outputs, BATCH_SIZE * HIDDEN_SIZE);
 
     // Hidden to Output Layer
-    ops += matvec_mult<HIDDEN_SIZE, OUTPUT_SIZE>(hidden_outputs, nn->hidden_to_output_weights, nn->output_biases,
-                batch->outputs);
+    ops += matvec_mult<HIDDEN_SIZE, OUTPUT_SIZE>(hidden_outputs, nn->hidden_to_output_weights, nn->output_biases, batch->outputs);
     ops += softmax(batch->outputs);
 
     free(hidden_outputs);  // Free intermediate buffer
@@ -183,6 +181,7 @@ long forward(NeuralNetwork* nn, Batch* batch) {
 
 int main() {
     srand(42);
+    omp_set_num_threads(4);
 
     NeuralNetwork* nn = initialize_network();
     Batch* batch = initialize_batch();
